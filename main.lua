@@ -5,7 +5,7 @@ local humpcam = require("hump.camera")
 
 local particles = {}
 local obstacles = {}
-local gravity = vector(0, -9.81*2)
+local gravity = vector(0, -9.81)
 local camera = humpcam(0, 0, 10)
 
 function math.clamp(val, min, max)
@@ -59,11 +59,9 @@ local function resolve_obstacle_collision(part, obst)
 	local rest = part.res * obst.res
 	local dot = (part.pos - part.oldpos)*normal
 	local reflect = (part.pos-part.oldpos)-normal*((1+rest)*dot)
-	if dist < part.rad^2 and obst.collide == true then
+	if dist < part.rad^2 then
 		part.pos = part.pos+normal*(part.rad-math.sqrt(dist))
 		part.oldpos=part.pos-reflect
-	else
-		return
 	end
 end
 
@@ -79,16 +77,18 @@ end
 function love.update(dt)
 	local size = 0.5
 	local rest = 0.4
-	if #particles <= 5000 then
-		for i = 1, 1 do
-			table.insert(particles, create_particle(vector(-40,20), vector(math.random(-1000,1000), 2000), size, rest, {0, 0.25+math.random()/4, 0.75+math.random()/4, 0.1}))
+	if #particles <= 1000 then
+		for i = 1, 10 do
+			table.insert(particles, create_particle(vector(-54,20), vector(math.random(0,500), math.random(0,500)), size, rest, {0, 0.25+math.random()/4, 0.75+math.random()/4, 0.1}))
 		end
 	end
 	for _,v in pairs(particles) do
 		v.accel = v.accel+gravity
-		verlet(v, dt)
+		verlet(v, 1/60)
 		for _,k in pairs(obstacles) do
-			resolve_obstacle_collision(v, k)
+			if k.collide == true then
+				resolve_obstacle_collision(v, k)
+			end
 		end
 	end
 end
@@ -104,6 +104,6 @@ function love.draw()
 	end
 	camera:detach()
 	love.graphics.setColor(1,1,1)
-	love.graphics.print("fps: "..love.timer.getFPS(),0,0,0,1.5,1.5)
+	love.graphics.print("fps: "..love.timer.getFPS().." frame: "..love.timer.getTime(),0,0,0,1.5,1.5)
 	love.graphics.print("particles: "..#particles,0,15,0,1.5,1.5)
 end
