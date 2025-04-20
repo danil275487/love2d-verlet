@@ -4,4 +4,4 @@ not really meant to be public but whatever version control is always good and op
 
 whatever
 
-![swag](https://media1.tenor.com/m/yMaG8PQBZNUAAAAd/skill-issue-tyler.gif)
+![swag](skill-issue-tyler.gif)
