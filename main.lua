@@ -6,7 +6,12 @@ local humpcam = require("hump.camera")
 local particles = {}
 local obstacles = {}
 local gravity = vector(0, -9.81)
-local camera = humpcam(0, 0, 10)
+local zoom = 10
+local camera = humpcam(0, 0, zoom)
+
+local drag = false
+local drag_pos = vector(0,0)
+local curr_pos = vector(0,0)
 
 function math.clamp(val, min, max)
 	return math.max(min, math.min(val, max))
@@ -74,6 +79,29 @@ function love.load()
 	table.insert(obstacles, create_obstacle(vector(-65,-30), vector(130,10), rest, {0.1}))
 	table.insert(obstacles, create_obstacle(vector(-25,-10), vector(50,5), rest, {0.1}, false))
 end
+
+function love.mousepressed(x, y, button, isTouch)
+    if button == 1 then  -- Typically the left mouse button
+        drag = true
+        drag_pos = vector(x,y)
+        curr_pos = vector(x,y)
+    end
+end
+
+function love.mousemoved(x, y, dx, dy, isTouch)
+    if drag then
+        curr_pos = vector(x,y)
+        camera:move(((curr_pos+drag_pos)/zoom):unpack())
+    end
+end
+
+function love.mousereleased(x, y, button, isTouch)
+    if button == 1 and drag then
+        dragging = false
+        curr_pos = vector(x,y)
+    end
+end
+
 function love.update(dt)
 	local size = 0.5
 	local rest = 0.4
@@ -105,5 +133,6 @@ function love.draw()
 	camera:detach()
 	love.graphics.setColor(1,1,1)
 	love.graphics.print("fps: "..love.timer.getFPS().." frame: "..love.timer.getTime(),0,0,0,1.5,1.5)
-	love.graphics.print("particles: "..#particles,0,15,0,1.5,1.5)
+	love.graphics.print("x: "..camera.x.." y: "..camera.y,0,15,0,1.5,1.5)
+	love.graphics.print("particles: "..#particles,0,30,0,1.5,1.5)
 end
