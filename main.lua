@@ -78,38 +78,35 @@ function love.load()
 	table.insert(obstacles, create_obstacle(vector(-65,40), vector(130,10), rest, {0.1}))
 	table.insert(obstacles, create_obstacle(vector(-65,-30), vector(130,10), rest, {0.1}))
 	table.insert(obstacles, create_obstacle(vector(-25,-10), vector(50,5), rest, {0.1}, false))
-	table.insert(particles, create_particle(vector(-50, 20), vector(500, 1000), 5, 1, {1,0,0}))
-	table.insert(particles, create_particle(vector(50, 20), vector(250, -1500), 5, 1, {0,0,1}))
+	table.insert(particles, create_particle(vector(0, 20), vector(500, 1), 5, 1, {1,0,0}))
+	table.insert(particles, create_particle(vector(0, 20), vector(-100, 100), 5, 1, {0,1,0}))
+	table.insert(particles, create_particle(vector(0, 20), vector(1000, 0), 5, 1, {0,0,1}))
 end
 
 function love.mousepressed(x, y, button)
     if button == 1 then
         drag = true
-        drag_pos = vector(x,y)
-        curr_pos = vector(x,y)
     end
 end
-function love.mousemoved(x, y)
+function love.mousemoved(x, y, dx, dy)
     if drag then
-        curr_pos = vector(x,y)
-        camera:move(((curr_pos-drag_pos)/(zoom*10)):unpack())
+        camera:move(-dx/camera.scale, -dy/camera.scale)
     end
 end
-function love.mousereleased(x, y)
+function love.mousereleased(x, y, button)
     if button == 1 and drag then
         drag = false
-        curr_pos = vector(x,y)
     end
+end
+function love.wheelmoved(x, y)
+	if y < 0 and camera.scale > 1 then
+		camera:zoom(0.9)
+	elseif y > 0 and camera.scale < 20 then
+		camera:zoom(1.1)
+	end
 end
 
 function love.update(dt)
-	--local size = 0.5
-	--local rest = 0.4
-	--if #particles <= 5000 then
-	--	for i = 1, 10 do
-	--		table.insert(particles, create_particle(vector(-54,20), vector(math.random(0,500), math.random(0,500)), size, rest, {0, 0.25+math.random()/4, 0.75+math.random()/4, 0.1}))
-	--	end
-	--end
 	for _,v in pairs(particles) do
 		v.accel = v.accel+gravity
 		verlet(v, 1/60)
@@ -133,6 +130,6 @@ function love.draw()
 	camera:detach()
 	love.graphics.setColor(1,1,1)
 	love.graphics.print("fps: "..love.timer.getFPS(),0,0,0,1.5,1.5)
-	love.graphics.print("x: "..camera.x.." y: "..camera.y,0,15,0,1.5,1.5)
+	love.graphics.print("x: "..camera.x.." y: "..camera.y.." z: "..camera.scale,0,15,0,1.5,1.5)
 	love.graphics.print("particles: "..#particles,0,30,0,1.5,1.5)
 end
