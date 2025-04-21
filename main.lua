@@ -71,45 +71,45 @@ local function resolve_obstacle_collision(part, obst)
 end
 
 function love.load()
-	local rest = 0.7
+	local rest = 1
 	love.graphics.setBackgroundColor(0.25, 0.25, 0.25)
 	table.insert(obstacles, create_obstacle(vector(-65,40), vector(10,70), rest, {0.1}))
 	table.insert(obstacles, create_obstacle(vector(55,40), vector(10,70), rest, {0.1}))
 	table.insert(obstacles, create_obstacle(vector(-65,40), vector(130,10), rest, {0.1}))
 	table.insert(obstacles, create_obstacle(vector(-65,-30), vector(130,10), rest, {0.1}))
 	table.insert(obstacles, create_obstacle(vector(-25,-10), vector(50,5), rest, {0.1}, false))
+	table.insert(particles, create_particle(vector(-50, 20), vector(500, 1000), 5, 1, {1,0,0}))
+	table.insert(particles, create_particle(vector(50, 20), vector(250, -1500), 5, 1, {0,0,1}))
 end
 
-function love.mousepressed(x, y, button, isTouch)
-    if button == 1 then  -- Typically the left mouse button
+function love.mousepressed(x, y, button)
+    if button == 1 then
         drag = true
         drag_pos = vector(x,y)
         curr_pos = vector(x,y)
     end
 end
-
-function love.mousemoved(x, y, dx, dy, isTouch)
+function love.mousemoved(x, y)
     if drag then
         curr_pos = vector(x,y)
-        camera:move(((curr_pos+drag_pos)/zoom):unpack())
+        camera:move(((curr_pos-drag_pos)/(zoom*10)):unpack())
     end
 end
-
-function love.mousereleased(x, y, button, isTouch)
+function love.mousereleased(x, y)
     if button == 1 and drag then
-        dragging = false
+        drag = false
         curr_pos = vector(x,y)
     end
 end
 
 function love.update(dt)
-	local size = 0.5
-	local rest = 0.4
-	if #particles <= 1000 then
-		for i = 1, 10 do
-			table.insert(particles, create_particle(vector(-54,20), vector(math.random(0,500), math.random(0,500)), size, rest, {0, 0.25+math.random()/4, 0.75+math.random()/4, 0.1}))
-		end
-	end
+	--local size = 0.5
+	--local rest = 0.4
+	--if #particles <= 5000 then
+	--	for i = 1, 10 do
+	--		table.insert(particles, create_particle(vector(-54,20), vector(math.random(0,500), math.random(0,500)), size, rest, {0, 0.25+math.random()/4, 0.75+math.random()/4, 0.1}))
+	--	end
+	--end
 	for _,v in pairs(particles) do
 		v.accel = v.accel+gravity
 		verlet(v, 1/60)
@@ -132,7 +132,7 @@ function love.draw()
 	end
 	camera:detach()
 	love.graphics.setColor(1,1,1)
-	love.graphics.print("fps: "..love.timer.getFPS().." frame: "..love.timer.getTime(),0,0,0,1.5,1.5)
+	love.graphics.print("fps: "..love.timer.getFPS(),0,0,0,1.5,1.5)
 	love.graphics.print("x: "..camera.x.." y: "..camera.y,0,15,0,1.5,1.5)
 	love.graphics.print("particles: "..#particles,0,30,0,1.5,1.5)
 end
