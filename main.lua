@@ -99,11 +99,45 @@ function love.mousereleased(x, y, button)
     end
 end
 function love.wheelmoved(x, y)
-	if y < 0 and camera.scale > 1 then
+	if y < 0 then
 		camera:zoom(0.9)
-	elseif y > 0 and camera.scale < 20 then
+	elseif y > 0 then
 		camera:zoom(1.1)
 	end
+	camera:zoomTo(math.clamp(camera.scale,1,20))
+end
+
+local touches = {}
+local zoom_dist = nil
+local zoom_base = 1
+function love.touchpressed(id, x, y, dx, dy, pressure)
+	table.insert(touches, {vector(x,y), id})
+	drag = true
+    if #touches == 2 then
+        zoom_dist = touches[1][1]:dist(touches[2][1])
+        zoom_base = camera.scale
+    end
+end
+function love.touchmoved(id, x, y, dx, dy, pressure)
+    for _,v in pairs(touches) do
+		if v[2] == id then
+			v[1] = vector(x,y)
+		end
+    end
+    if #touches == 2 then
+        local dist = touches[1][1]:dist(touches[2][1])
+        camera:zoomTo(zoom_base*dist/zoom_dist)
+    end
+	camera:zoomTo(math.clamp(camera.scale,1,20))
+end
+function love.touchreleased(id, x, y, dx, dy, pressure)
+    for i=#touches,1,-1 do
+		if touches[i][2] == id then
+			table.remove(touches, i)
+		end
+    end
+	drag = false
+	zoom_dist = nil
 end
 
 function love.update(dt)
@@ -130,6 +164,6 @@ function love.draw()
 	camera:detach()
 	love.graphics.setColor(1,1,1)
 	love.graphics.print("fps: "..love.timer.getFPS(),0,0,0,1.5,1.5)
-	love.graphics.print("x: "..camera.x.." y: "..camera.y.." z: "..camera.scale,0,15,0,1.5,1.5)
+	love.graphics.print("x: "..camera.x.." y: "..camera.y.." z: "..camera.scale.." "..tostring(drag),0,15,0,1.5,1.5)
 	love.graphics.print("particles: "..#particles,0,30,0,1.5,1.5)
 end
